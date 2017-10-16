@@ -30,4 +30,4 @@ and [translators](http://crowdin.net/project/simple-counter).
 ## What remains to do
 * Widget implement colors (service, settings)
 * Edit dialog (custom counteres checkpoint number, default counting direction boolean)
-* Service closing and opening
+* Service closing and opening logic 
