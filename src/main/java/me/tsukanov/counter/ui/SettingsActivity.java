@@ -358,6 +358,27 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
             });
 
             // ADDING CODE
+            findPreference("widgetTransparency").setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object value) {
+
+                    int val = Integer.parseInt((String) value);
+                    if (val < 0) {
+                        val = 0;
+                    } else if (val > 90) {
+                        val = 90;
+                    }
+
+                    // TODO: ADD TOAST (for above cases, and for set value)
+
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                    settings.edit().putString("widgetTransparency", "" + val).apply();
+                    return false;
+
+                }
+            });
+
+            // ADDING CODE
             findPreference("vibrationTime").setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object value) {

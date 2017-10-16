@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
@@ -33,6 +34,8 @@ import android.widget.Toast;
 
 import me.tsukanov.counter.CounterApplication;
 import me.tsukanov.counter.R;
+
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
 public class FloatingViewService extends Service implements View.OnClickListener {
 
@@ -56,6 +59,7 @@ public class FloatingViewService extends Service implements View.OnClickListener
     private SparseIntArray soundsMap;
     private TextView counterName;
     private TextView counterValue;
+    private int sideLength;
 
     private boolean touchMoved = false;
 
@@ -150,15 +154,23 @@ public class FloatingViewService extends Service implements View.OnClickListener
         //adding click listener to close button and expanded view
         mFloatingView.findViewById(R.id.buttonCloseCollapsed).setOnClickListener(this);
         mFloatingView.findViewById(R.id.buttonCloseExpanded).setOnClickListener(this);
-        expandedView.setOnClickListener(this);
+//        expandedView.setOnClickListener(this); // commenting
 
-        //adding an touchlistener to make drag movement of the floating widget
-        mFloatingView.findViewById(R.id.relativeLayoutParent).setOnTouchListener(new View.OnTouchListener() {
+
+        View.OnTouchListener someOnTouchListener = new View.OnTouchListener() {
+
+            boolean isExpanded;
             private int initialX;
             private int initialY;
             private float initialTouchX;
             private float initialTouchY;
             private boolean hasMoved = false;
+            private int halfScreenWidth = getScreenWidth() / 2;
+            private int halfScreenHeight = getScreenHeight() / 2;
+            private int halfSideLength;
+//            private boolean isPortrait =
+
+//            private int halfSideLength = sideLength / 2;
 
 
             @Override
@@ -170,14 +182,26 @@ public class FloatingViewService extends Service implements View.OnClickListener
                         initialY = params.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
+
                         hasMoved = false;
+
+                        if (expandedView.getVisibility() == View.VISIBLE) isExpanded = true;
+                        else isExpanded = false;
+
                         return true;
 
                     case MotionEvent.ACTION_UP:
                         //when the drag is ended switching the state of the widget
                         if (!hasMoved) {
-                            collapsedView.setVisibility(View.GONE);
-                            expandedView.setVisibility(View.VISIBLE);
+                            if (isExpanded) {
+                                increment();
+                            } else {
+                                collapsedView.setVisibility(View.GONE);
+                                expandedView.setVisibility(View.VISIBLE);
+                                isExpanded = false;
+                                hasMoved = false;
+                            }
+
                         }
                         return true;
 
@@ -185,14 +209,66 @@ public class FloatingViewService extends Service implements View.OnClickListener
                         //this code is helping the widget to move around the screen with fingers
                         params.x = initialX + (int) (event.getRawX() - initialTouchX);
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        mWindowManager.updateViewLayout(mFloatingView, params);
-                        hasMoved = true;
+
+                        if (getApplicationContext().getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE){
+
+                            if (params.y < -(halfScreenWidth - halfSideLength))
+                                params.y = -(halfScreenWidth - halfSideLength);
+
+                            if (params.y > (halfScreenWidth - halfSideLength))
+                                params.y = halfScreenWidth - halfSideLength;
+
+                            if (params.x < -(halfScreenHeight - halfSideLength))
+                                params.x = -(halfScreenHeight - halfSideLength);
+
+                            if (params.x > (halfScreenHeight - halfSideLength))
+                                params.x = halfScreenHeight - halfSideLength;
+
+                        }else{
+
+                            if (params.x < -(halfScreenWidth - halfSideLength))
+                                params.x = -(halfScreenWidth - halfSideLength);
+
+                            if (params.x > (halfScreenWidth - halfSideLength))
+                                params.x = halfScreenWidth - halfSideLength;
+
+                            if (params.y < -(halfScreenHeight - halfSideLength))
+                                params.y = -(halfScreenHeight - halfSideLength);
+
+                            if (params.y > (halfScreenHeight - halfSideLength))
+                                params.y = halfScreenHeight - halfSideLength;
+
+                        }
+
+
+                        if (isExpanded) halfSideLength = sideLength / 2;
+                        else halfSideLength = 0;
+
+
+                        int distanceMovedX = (int) (event.getRawX() - initialTouchX);
+                        int distanceMovedY = (int) (event.getRawY() - initialTouchY);
+                        int distanceMoved = (int) Math.sqrt(distanceMovedX * distanceMovedX + distanceMovedY * distanceMovedY);
+
+                        // value is to be specified based on human tremor
+                        // could be different
+
+                        if (distanceMoved > 70)
+                            hasMoved = true;
+
+                        if (isExpanded && distanceMoved < 70) {
+                        } else {
+                            mWindowManager.updateViewLayout(mFloatingView, params);
+                        }
                         return true;
                 }
                 return false;
             }
 
-        });
+        };
+
+        //adding an touchlistener to make drag movement of the floating widget
+        mFloatingView.findViewById(R.id.relativeLayoutParent).setOnTouchListener(someOnTouchListener);
+//        expandedView.findViewById(R.id.relativeLayoutParent).setOnTouchListener(someOnTouchListener);
 
 
         // copied from counterfragment.java
@@ -208,10 +284,15 @@ public class FloatingViewService extends Service implements View.OnClickListener
 
 
         // width
-        int sideLength = Math.min(getScreenHeight(), getScreenWidth());
+        sideLength = Math.min(getScreenHeight(), getScreenWidth());
         sideLength = sideLength * Integer.parseInt(settings.getString("widgetScreenPercentage", "50")) / 100;
+        int transparency = Integer.parseInt(settings.getString("widgetTransparency", "50"));
+        int alpha = (100 - transparency) * 255 / 100;
+
         expandedView.getLayoutParams().height = sideLength; // settings.getInt("widget_sideLength",100);
         expandedView.getLayoutParams().width = sideLength; // settings.getInt("widget_sideLength",100);
+        expandedView.getBackground().setAlpha(alpha);
+
 
 //        tv_value.setTextColor(settings.getInt("widget_frontColor", 0xddffffff));
 //        tv_value.setBackgroundColor(settings.getInt("widget_backColor", 0xaa00ff00));
@@ -401,7 +482,9 @@ public class FloatingViewService extends Service implements View.OnClickListener
         }
     }
 
-    private enum Sound {INCREMENT_SOUND, DECREMENT_SOUND}
+    private enum Sound {
+        INCREMENT_SOUND, DECREMENT_SOUND
+    }
 
 
     private class SingleTapConfirm extends GestureDetector.SimpleOnGestureListener {
@@ -413,3 +496,36 @@ public class FloatingViewService extends Service implements View.OnClickListener
     }
 
 }
+
+
+// https://stackoverflow.com/a/28106474
+// todo: implement circular widget option
+/*
+Thank you for your all support, based on your support I have done by below way and it is working perfect
+
+        ImageView imgView = (ImageView) findViewById(R.id.imageView1);
+        imgView.setOnTouchListener(new View.OnTouchListener() {
+
+@Override
+public boolean onTouch(View v, MotionEvent event) {
+
+        //CIRCLE :      (x-a)^2 + (y-b)^2 = r^2
+        float centerX, centerY, touchX, touchY, radius;
+        centerX = v.getWidth() / 2;
+        centerY = v.getHeight() / 2;
+        touchX = event.getX();
+        touchY = event.getY();
+        radius = centerX;
+        System.out.println("centerX = "+centerX+", centerY = "+centerY);
+        System.out.println("touchX = "+touchX+", touchY = "+touchY);
+        System.out.println("radius = "+radius);
+        if (Math.pow(touchX - centerX, 2)
+        + Math.pow(touchY - centerY, 2) < Math.pow(radius, 2)) {
+        System.out.println("Inside Circle");
+        return false;
+        } else {
+        System.out.println("Outside Circle");
+        return true;
+        }
+        }
+        });*/

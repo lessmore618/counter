@@ -18,6 +18,7 @@
         tools:ignore="UselessParent">
 
         <!-- this is the collapsed layout -->
+
         <RelativeLayout
             android:id="@+id/layoutCollapsed"
             android:layout_width="wrap_content"
@@ -41,130 +42,63 @@
         </RelativeLayout>
 
         <!-- this is the expanded layout -->
-        <!--<LinearLayout-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:orientation="horizontal"-->
-            <!--android:padding="0dp"-->
-            <!--android:visibility="gone">-->
-            <!--android:padding="8dp"-->
 
-            <!--<ImageView-->
-            <!--android:id="@+id/buttonSimplifiedCodingExpanded"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:src="@drawable/ic_action_reset_dark"-->
-            <!--tools:ignore="ContentDescription"-->
-            <!--android:visibility="gone"-->
-            <!--/>-->
+        <RelativeLayout
+            android:id="@+id/layoutExpanded"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#a0c3d7"
+            android:orientation="vertical"
+            android:padding="0dp"
+            android:visibility="gone"
+            >
 
-            <!--android:layout_width="80dp"-->
-            <!--android:layout_height="80dp"-->
+            <TextView
+                android:id="@+id/counterValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:text="1234"
+                android:textAlignment="center"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:textColor="#ffffff"
+                android:textStyle="bold"
+                />
+
+            <TextView
+                android:id="@+id/counterName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/counterValue"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center_horizontal"
+                android:text="ABC"
+                android:textAlignment="center"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
 
 
-            <RelativeLayout
-                android:id="@+id/layoutExpanded"
+            <ImageView
+                android:id="@+id/buttonCloseExpanded"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="#a0c3d7"
-                android:visibility="gone"
-                android:padding="0dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:src="@drawable/ic_clear" />
 
-                >
-
-                <!--android:background="#a0f0f0"-->
-
-                <!--<LinearLayout-->
-                    <!--android:id="@+id/buttonSimplifiedCoding"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:background="#ffff00"-->
-                    <!--android:layout_centerInParent="true"-->
-                    <!--android:orientation="vertical">-->
+            <ImageView
+                android:id="@+id/buttonSettingsExpanded"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:src="@drawable/ic_action_settings" />
 
 
-                    <!--android:background="#00ff00"-->
-                    <!--android:paddingLeft="15dp"-->
-                    <!--android:paddingRight="15dp"-->
-                    <!--android:paddingTop="15dp"-->
+        </RelativeLayout>
 
-
-
-                    <!--android:id="@id/counterValueLabel"-->
-                    <TextView
-                        android:id="@+id/counterValue"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:text="1234"
-                        android:textAlignment="center"
-                        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                        android:textColor="#ffffff"
-                        android:textStyle="bold"
-                        android:layout_centerInParent="true"
-                        android:layout_marginTop="20dp"
-
-
-                        />
-                    <!--android:background="#ff0000"-->
-
-
-
-                <TextView
-                    android:id="@+id/counterName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="ABC"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold"
-                    android:layout_centerHorizontal="true"
-                    android:layout_above="@id/counterValue"
-                    />
-
-
-
-                <!--</LinearLayout>-->
-
-                <ImageView
-                    android:id="@+id/buttonCloseExpanded"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentRight="true"
-                    android:src="@drawable/ic_clear" />
-
-                    <!--android:layout_alignRight="@id/buttonSimplifiedCoding"-->
-                    <!--android:layout_alignTop="@id/buttonSimplifiedCoding"-->
-
-                <!--android:layout_toRightOf="@id/buttonSimplifiedCoding"-->
-
-
-                <!--android:layout_alignParentTop="true"-->
-                <!--android:layout_alignParentRight="true"-->
-
-
-                <!--android:layout_alignTop="@+id/buttonSimplifiedCoding"-->
-                <!--android:layout_toRightOf="@+id/buttonSimplifiedCoding"-->
-
-                <!--android:background="#ff00ff"-->
-
-
-                <!--android:layout_alignParentRight="true"-->
-                <!--android:layout_alignParentTop="true"-->
-
-                <!--android:layout_width="15dp"-->
-                <!--android:layout_height="25dp"-->
-
-
-                <!--android:layout_marginLeft="50dp"-->
-
-
-            </RelativeLayout>
-
-        <!--</LinearLayout>-->
     </RelativeLayout>
 </FrameLayout>
