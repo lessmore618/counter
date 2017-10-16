@@ -26,3 +26,8 @@ and [translators](http://crowdin.net/project/simple-counter).
 ## What was used
 * Application icon made by [Dawid Tarasiuk](https://plus.google.com/u/0/105243332659178233856)
 * Sounds from [adobeflash.com](http://www.adobeflash.com/download/sounds/clicks/)
+
+## What remains to do
+* Widget implement colors (service, settings)
+* Edit dialog (custom counteres checkpoint number, default counting direction boolean)
+* Service closing and opening
