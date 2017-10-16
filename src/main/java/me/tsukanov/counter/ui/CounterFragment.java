@@ -31,7 +31,17 @@ import me.tsukanov.counter.ui.dialogs.DeleteDialog;
 import me.tsukanov.counter.ui.dialogs.EditDialog;
 
 public class CounterFragment extends Fragment {
-    public static final int MAX_VALUE = 9999;
+
+
+//    int checkpointValue = Integer.parseInt(settings.getString("checkpointValue", "100"));
+//    boolean vibrationOn = settings.getBoolean("vibrationOn", true);
+//    boolean checkpointVibrationOn = settings.getBoolean("checkpointVibrationOn", true);
+//    int vibrationTime = Integer.parseInt(settings.getString("vibrationTime", "30"));
+//    int checkpointVibrationTime = Integer.parseInt(settings.getString("checkpointVibrationTime", "90"));
+
+
+    //    public static final int MAX_VALUE = 9999;
+    public static final int MAX_VALUE = 10000;
     public static final int MIN_VALUE = 0;
     public static final int DEFAULT_VALUE = MIN_VALUE;
     private static final long DEFAULT_VIBRATION_DURATION = 30; // Milliseconds
@@ -86,6 +96,23 @@ public class CounterFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.counter, container, false);
 
+
+        int backgroundTapAction = Integer.parseInt(settings.getString("backgroundTapAction", "1"));
+
+        if (backgroundTapAction > 0) {
+            view.setOnClickListener(new OnClickListener() {
+                public void onClick(View v) {
+                    increment();
+                }
+            });
+        } else if (backgroundTapAction < 0) {
+            view.setOnClickListener(new OnClickListener() {
+                public void onClick(View v) {
+                    decrement();
+                }
+            });
+        }
+
         counterLabel = (TextView) view.findViewById(R.id.counterLabel);
 
         incrementButton = (Button) view.findViewById(R.id.incrementButton);
@@ -95,12 +122,20 @@ public class CounterFragment extends Fragment {
             }
         });
 
+        // ADDING CODE
+        boolean showIncrement = settings.getBoolean("showIncrement", false);
+        incrementButton.setVisibility(showIncrement ? View.VISIBLE : View.GONE);
+
         decrementButton = (Button) view.findViewById(R.id.decrementButton);
         decrementButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 decrement();
             }
         });
+
+        // ADDING CODE
+        boolean showDecrement = settings.getBoolean("showDecrement", true);
+        decrementButton.setVisibility(showDecrement ? View.VISIBLE : View.GONE);
 
         if (name == null) name = getActivity().getString(R.string.default_counter_name);
         if (app.counters.containsKey(name)) {
@@ -109,7 +144,9 @@ public class CounterFragment extends Fragment {
             app.counters.put(name, value);
         }
 
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(name);
+        boolean hiddenModeOn = settings.getBoolean("hiddenModeOn", false);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(hiddenModeOn ? "" : name);
+        counterLabel.setVisibility(hiddenModeOn ? View.INVISIBLE : View.VISIBLE);
 
         return view;
     }
@@ -117,6 +154,11 @@ public class CounterFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.counter_menu, menu);
+
+        boolean hiddenModeOn = settings.getBoolean("hiddenModeOn", false);
+        /*MenuItem boatClassSelectedButton = *//*(MenuItem) */
+        menu.findItem(R.id.menu_hide).setChecked(hiddenModeOn);
+
     }
 
     @Override
@@ -173,10 +215,35 @@ public class CounterFragment extends Fragment {
             case R.id.menu_delete:
                 showDeleteDialog();
                 return true;
+            case R.id.menu_hide:
+                // not implemented yet
+                // IMPLEMENTING
+                boolean hiddenModeOn = item.isChecked();
+                counterLabel.setVisibility(hiddenModeOn ? View.INVISIBLE : View.VISIBLE);
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(hiddenModeOn ? "" : name);
+
+
+                return true;
+
+            case R.id.menu_widget:
+                // IMPLEMENTED IN MAIN ACTIVITY
+                return false;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
+//    private void toggleHiddenState() {
+    // NOT IMPLEMENTED YET
+    // IMPLEMENTING
+
+//    boolean hiddenModeOn = item.isChecked();
+//                counterLabel.setVisibility(hiddenModeOn ? View.INVISIBLE : View.VISIBLE);
+//                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(hiddenModeOn ? "" : name);
+
+//    }
+
 
     private void showResetConfirmationDialog() {
         Dialog dialog = new AlertDialog.Builder(getActivity())
@@ -206,16 +273,38 @@ public class CounterFragment extends Fragment {
 
     public void increment() {
         if (value < MAX_VALUE) {
-            setValue(++value);
-            vibrate(DEFAULT_VIBRATION_DURATION);
+//            setValue(++value);
+            // ADDING CODE
+            int countAmount = Integer.parseInt(settings.getString("countAmount", "1"));
+            int newValue = value + countAmount;
+            if (value > MAX_VALUE) {
+                value = MAX_VALUE;
+            } else if (value < MIN_VALUE) {
+                value = MIN_VALUE;
+            }
+            setValue(newValue);
+
+            vibrateTick(DEFAULT_VIBRATION_DURATION);
             playSound(Sound.INCREMENT_SOUND);
         }
     }
 
     public void decrement() {
+
         if (value > MIN_VALUE) {
-            setValue(--value);
-            vibrate(DEFAULT_VIBRATION_DURATION + 20);
+//            setValue(--value);
+            // ADDING CODE
+            int countAmount = Integer.parseInt(settings.getString("countAmount", "1"));
+            int newValue = value - countAmount;
+            if (value > MAX_VALUE) {
+                value = MAX_VALUE;
+            } else if (value < MIN_VALUE) {
+                value = MIN_VALUE;
+            }
+            setValue(newValue);
+
+
+            vibrateTick(DEFAULT_VIBRATION_DURATION + 20);
             playSound(Sound.DECREMENT_SOUND);
         }
     }
@@ -249,9 +338,31 @@ public class CounterFragment extends Fragment {
         else decrementButton.setEnabled(true);
     }
 
-    private void vibrate(long duration) {
+    private void vibrateTick(long duration) {
         if (settings.getBoolean("vibrationOn", true)) {
             vibrator.vibrate(duration);
+        }
+    }
+
+    // ADDING CODE
+    private void vibrateCheckpoint(long duration) {
+        if (settings.getBoolean("checkpointVibrationOn", true)) {
+            vibrator.vibrate(duration);
+        }
+    }
+
+    private void vibrate() {
+
+        int checkpointValue = Integer.parseInt(settings.getString("checkpointValue", "100"));
+        boolean vibrationOn = settings.getBoolean("vibrationOn", true);
+        boolean checkpointVibrationOn = settings.getBoolean("checkpointVibrationOn", true);
+        int vibrationTime = Integer.parseInt(settings.getString("vibrationTime", "30"));
+        int checkpointVibrationTime = Integer.parseInt(settings.getString("checkpointVibrationTime", "90"));
+
+        if (value % checkpointValue == 0) { // checkpoint case
+            if (checkpointVibrationOn) vibrator.vibrate(checkpointVibrationTime);
+        } else { // normal case
+            if (vibrationOn) vibrator.vibrate(vibrationTime);
         }
     }
 

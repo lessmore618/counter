@@ -13,6 +13,8 @@
     <string name="menu_reset">Reset counter</string>
     <string name="menu_edit">Edit counter</string>
     <string name="menu_delete">Delete counter</string>
+    <string name="menu_widget">Widget counter</string>
+    <string name="menu_hide">Hidden mode</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_info">About</string>
 
@@ -36,6 +38,13 @@
     <string name="settings_theme">Theme</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
+
+    <string name="settings_background_tap_title">Background tap action</string>
+    <string name="settings_background_tap_increment">Increment</string>
+    <string name="settings_background_tap_decrement">Decrement</string>
+    <string name="settings_background_tap_none">Do nothing</string>
+
+
     <string name="settings_keep_on_title">Keep screen on</string>
     <string name="settings_keep_on_summary">Keep screen on while app is active</string>
     <string name="settings_controls">Controls</string>
@@ -43,13 +52,34 @@
     <string name="settings_sounds_summary">Play sounds</string>
     <string name="settings_vibration_title">Turn on vibration</string>
     <string name="settings_vibration_summary">Vibrate on changes</string>
+    <string name="settings_checkpoint_vibration_title">Turn on checkpoint vibration</string>
+    <string name="settings_checkpoint_vibration_summary">Vibrate on checkpoints</string>
     <string name="settings_hard_title">Use hardware buttons</string>
     <string name="settings_hard_summary">Change counter value using hardware buttons</string>
     <string name="settings_other">Other</string>
+    <string name="settings_custom">Custom</string>
+    <string name="settings_widget">Widget</string>
+    <string name="settings_checkpoint">Checkpoint</string>
+    <string name="settings_widget_title">Customize widget</string>
     <string name="settings_version_title">Version</string>
     <string name="settings_wipe_title">Remove all counters</string>
+    <string name="settings_restore_defaults_title">Restore default settings</string>
     <string name="settings_wipe_confirmation">Do you really want to remove all counters?</string>
     <string name="settings_wipe_confirmation_yes">Remove all</string>
+    <string name="settings_show_decrement_title">Decrement button</string>
+    <string name="settings_show_decrement_summary">Include decrement button on counter</string>
+    <string name="settings_show_increment_title">Increment button</string>
+    <string name="settings_show_increment_summary">Include increment button on counter</string>
+    <string name="settings_background_increment_title">Background Increment</string>
+    <string name="settings_background_increment_summary">Increment upon tapping on background</string>
+    <string name="settings_count_amount_title">Count amount</string>
+    <string name="settings_count_amount_summary">Number to add to counter on each increment</string>
+    <string name="settings_vibration_time_title">Vibration time</string>
+    <string name="settings_vibration_time_summary">Time of tick vibration in milliseconds</string>
+    <string name="settings_checkpoint_vibration_time_summary">Checkpoint vibration time</string>
+    <string name="settings_checkpoint_vibration_time_title">Time of tick vibration at checkpoints in milliseconds</string>
+    <string name="settings_checkpoint_value_title">Checkpoint value</string>
+    <string name="settings_checkpoint_value_summary">Checkpoint value (number of ticks)</string>
 
     <!-- Toasts -->
     <string name="toast_wipe_success">All counters have been removed.</string>
@@ -59,5 +89,15 @@
     <!-- Other stuff -->
     <string name="default_counter_name">First counter</string>
     <string name="unknown">Unknown</string>
+    <string name="settings_widget_vibration_title">Widget vibration</string>
+    <string name="settings_widget_vibration_summary">Widget vibration summary</string>
+    <string name="settings_widget_checkpoint_vibration_summary">Widget checkpoint vibration summary</string>
+    <string name="settings_widget_checkpoint_vibration_title">Widget checkpoint vibration</string>
+    <string name="settings_widget_screen_percentage_summary">Widget screen percentage</string>
+    <string name="settings_widget_screen_percentage_title">Widget screen percentage</string>
+    <string name="settings_widget_transparency_summary">Widget transparency summary</string>
+    <string name="settings_widget_transparency_title">Widget transparency</string>
+    <string name="settings_widget_sounds_summary">Widget sounds summary</string>
+    <string name="settings_widget_sounds_title">Widget sounds</string>
 
 </resources>
