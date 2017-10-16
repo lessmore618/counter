@@ -502,7 +502,6 @@ public class FloatingViewService extends Service implements View.OnClickListener
 // todo: implement circular widget option
 /*
 Thank you for your all support, based on your support I have done by below way and it is working perfect
-
         ImageView imgView = (ImageView) findViewById(R.id.imageView1);
         imgView.setOnTouchListener(new View.OnTouchListener() {
 

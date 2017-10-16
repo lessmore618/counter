@@ -35,4 +35,5 @@ and [translators](http://crowdin.net/project/simple-counter).
     - implement custom colors or predefined themes (search for best library)  
     - implement round widget option https://stackoverflow.com/a/28106474, no png 
     - 4 corners buttons, a way to choose counter, access application, settings and collapse 
+* bug debug 
     
