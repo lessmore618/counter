@@ -32,14 +32,6 @@ import me.tsukanov.counter.ui.dialogs.EditDialog;
 
 public class CounterFragment extends Fragment {
 
-
-//    int checkpointValue = Integer.parseInt(settings.getString("checkpointValue", "100"));
-//    boolean vibrationOn = settings.getBoolean("vibrationOn", true);
-//    boolean checkpointVibrationOn = settings.getBoolean("checkpointVibrationOn", true);
-//    int vibrationTime = Integer.parseInt(settings.getString("vibrationTime", "30"));
-//    int checkpointVibrationTime = Integer.parseInt(settings.getString("checkpointVibrationTime", "90"));
-
-
     //    public static final int MAX_VALUE = 9999;
     public static final int MAX_VALUE = 10000;
     public static final int MIN_VALUE = 0;
@@ -113,7 +105,7 @@ public class CounterFragment extends Fragment {
             });
         }
 
-        counterLabel = (TextView) view.findViewById(R.id.counterLabel);
+        counterLabel = (TextView) view.findViewById(R.id.counterName);
 
         incrementButton = (Button) view.findViewById(R.id.incrementButton);
         incrementButton.setOnClickListener(new OnClickListener() {
@@ -284,7 +276,8 @@ public class CounterFragment extends Fragment {
             }
             setValue(newValue);
 
-            vibrateTick(DEFAULT_VIBRATION_DURATION);
+//            vibrateTick(DEFAULT_VIBRATION_DURATION);
+            vibrate();
             playSound(Sound.INCREMENT_SOUND);
         }
     }
@@ -304,7 +297,8 @@ public class CounterFragment extends Fragment {
             setValue(newValue);
 
 
-            vibrateTick(DEFAULT_VIBRATION_DURATION + 20);
+//            vibrateTick(DEFAULT_VIBRATION_DURATION + 20);
+            vibrate();
             playSound(Sound.DECREMENT_SOUND);
         }
     }
@@ -330,6 +324,7 @@ public class CounterFragment extends Fragment {
     public String getName() {
         return name;
     }
+
 
     private void checkStateOfButtons() {
         if (value >= MAX_VALUE) incrementButton.setEnabled(false);

@@ -5,31 +5,114 @@ package me.tsukanov.counter.ui;
  */
 
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Service;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.PixelFormat;
+import android.media.AudioManager;
+import android.media.SoundPool;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Vibrator;
+import android.preference.PreferenceManager;
+import android.util.SparseIntArray;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import me.tsukanov.counter.CounterApplication;
 import me.tsukanov.counter.R;
 
 public class FloatingViewService extends Service implements View.OnClickListener {
 
+    //    public static final int MAX_VALUE = 9999;
+    public static final int MAX_VALUE = 10000;
+    public static final int MIN_VALUE = 0;
+    public static final int DEFAULT_VALUE = MIN_VALUE;
+    private static final long DEFAULT_VIBRATION_DURATION = 30; // Milliseconds
+
+    // copied from counterfragment.java
     private WindowManager mWindowManager;
     private View mFloatingView;
     private View collapsedView;
     private View expandedView;
+    private String name = null;
+    private int value = DEFAULT_VALUE;
+    private CounterApplication app;
+    private SharedPreferences settings;
+    private Vibrator vibrator;
+    private SoundPool soundPool;
+    private SparseIntArray soundsMap;
+    private TextView counterName;
+    private TextView counterValue;
+
+    private boolean touchMoved = false;
+
+//    private Button incrementButton;
+//    private Button decrementButton;
+
+
+    private GestureDetector gestureDetector;
 
     public FloatingViewService() {
+    }
+
+    @SuppressLint("ValidFragment")
+    public FloatingViewService(String name) {
+        this.name = name;
+    }
+
+    @SuppressLint("ValidFragment")
+    public FloatingViewService(String name, int value) {
+        this.name = name;
+        this.value = value;
+    }
+
+    public static int getScreenWidth() {
+        return Resources.getSystem().getDisplayMetrics().widthPixels;
+    }
+
+    public static int getScreenHeight() {
+        return Resources.getSystem().getDisplayMetrics().heightPixels;
+    }
+
+    public String getCounterName() {
+        return name;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        handleStart(intent, startId);
+        return START_NOT_STICKY;
+    }
+
+    private void handleStart(Intent intent, int startId) {
+        Bundle extras = intent.getExtras();
+        if (extras == null) {
+        } else {
+            this.name = extras.getString("name");
+            this.value = Integer.parseInt(extras.getString("value"));
+
+            counterName.setText(name);
+            counterValue.setText(Integer.toString(value));
+
+        }
     }
 
     @Override
@@ -42,7 +125,6 @@ public class FloatingViewService extends Service implements View.OnClickListener
                 Toast.LENGTH_SHORT
         ).show();
 
-
         //getting the widget layout from xml using layout inflater
         mFloatingView = LayoutInflater.from(this).inflate(R.layout.layout_floating_widget, null);
 
@@ -54,11 +136,12 @@ public class FloatingViewService extends Service implements View.OnClickListener
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
-
         //getting windows services and adding the floating view to it
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(mFloatingView, params);
 
+        counterName = (TextView) mFloatingView.findViewById(R.id.counterName);
+        counterValue = (TextView) mFloatingView.findViewById(R.id.counterValue);
 
         //getting the collapsed and expanded view from the floating view
         collapsedView = mFloatingView.findViewById(R.id.layoutCollapsed);
@@ -75,21 +158,27 @@ public class FloatingViewService extends Service implements View.OnClickListener
             private int initialY;
             private float initialTouchX;
             private float initialTouchY;
+            private boolean hasMoved = false;
+
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         initialX = params.x;
                         initialY = params.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
+                        hasMoved = false;
                         return true;
 
                     case MotionEvent.ACTION_UP:
                         //when the drag is ended switching the state of the widget
-                        collapsedView.setVisibility(View.GONE);
-                        expandedView.setVisibility(View.VISIBLE);
+                        if (!hasMoved) {
+                            collapsedView.setVisibility(View.GONE);
+                            expandedView.setVisibility(View.VISIBLE);
+                        }
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
@@ -97,11 +186,39 @@ public class FloatingViewService extends Service implements View.OnClickListener
                         params.x = initialX + (int) (event.getRawX() - initialTouchX);
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
                         mWindowManager.updateViewLayout(mFloatingView, params);
+                        hasMoved = true;
                         return true;
                 }
                 return false;
             }
+
         });
+
+
+        // copied from counterfragment.java
+        app = (CounterApplication) getApplication();
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        /** Setting up sounds */
+        soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
+        soundsMap = new SparseIntArray(2);
+        soundsMap.put(FloatingViewService.Sound.INCREMENT_SOUND.ordinal(), soundPool.load(getApplicationContext(), R.raw.increment_sound, 1));
+        soundsMap.put(FloatingViewService.Sound.DECREMENT_SOUND.ordinal(), soundPool.load(getApplicationContext(), R.raw.decrement_sound, 1));
+
+
+        // width
+        int sideLength = Math.min(getScreenHeight(), getScreenWidth());
+        sideLength = sideLength * Integer.parseInt(settings.getString("widgetScreenPercentage", "50")) / 100;
+        expandedView.getLayoutParams().height = sideLength; // settings.getInt("widget_sideLength",100);
+        expandedView.getLayoutParams().width = sideLength; // settings.getInt("widget_sideLength",100);
+
+//        tv_value.setTextColor(settings.getInt("widget_frontColor", 0xddffffff));
+//        tv_value.setBackgroundColor(settings.getInt("widget_backColor", 0xaa00ff00));
+//        tv_value.getBackground().setAlpha((100 - settings.getInt("widget_alpha", 50)) * 255 / 100);
+
+        gestureDetector = new GestureDetector(this, new SingleTapConfirm());
+
     }
 
     @Override
@@ -117,13 +234,14 @@ public class FloatingViewService extends Service implements View.OnClickListener
                 //switching views
 //                collapsedView.setVisibility(View.VISIBLE);
 //                expandedView.setVisibility(View.GONE);
+                increment();
                 break;
 
-//            case R.id.layoutCollapsed:
-//                //switching views
-//                collapsedView.setVisibility(View.VISIBLE);
-//                expandedView.setVisibility(View.GONE);
-//                break;
+            case R.id.layoutCollapsed:
+                //switching views
+                collapsedView.setVisibility(View.VISIBLE);
+                expandedView.setVisibility(View.GONE);
+                break;
 
             case R.id.buttonCloseExpanded:
                 //closing the widget
@@ -137,4 +255,161 @@ public class FloatingViewService extends Service implements View.OnClickListener
                 break;
         }
     }
+
+
+    // from now on
+    // copied from increment
+
+    private void showResetConfirmationDialog() {
+        Dialog dialog = new AlertDialog.Builder(getApplicationContext())
+                .setMessage(getResources().getText(R.string.dialog_reset_title))
+                .setCancelable(false)
+                .setPositiveButton(getResources().getText(R.string.dialog_button_reset),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                reset();
+                            }
+                        })
+                .setNegativeButton(getResources().getText(R.string.dialog_button_cancel), null)
+                .create();
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.show();
+    }
+
+//    private void showEditDialog() {
+//        EditDialog dialog = EditDialog.newInstance(name, value);
+//        dialog.show(getFragmentManager(), EditDialog.TAG);
+//    }
+//
+//    private void showDeleteDialog() {
+//        DeleteDialog dialog = DeleteDialog.newInstance(name);
+//        dialog.show(getFragmentManager(), DeleteDialog.TAG);
+//    }
+
+    public void increment() {
+        if (value < MAX_VALUE) {
+//            setValue(++value);
+            // ADDING CODE
+            int countAmount = Integer.parseInt(settings.getString("countAmount", "1"));
+            int newValue = value + countAmount;
+            if (value > MAX_VALUE) {
+                value = MAX_VALUE;
+            } else if (value < MIN_VALUE) {
+                value = MIN_VALUE;
+            }
+            setValue(newValue);
+
+//            vibrateTick(DEFAULT_VIBRATION_DURATION);
+            vibrate();
+            playSound(FloatingViewService.Sound.INCREMENT_SOUND);
+        }
+    }
+
+    public void decrement() {
+
+        if (value > MIN_VALUE) {
+//            setValue(--value);
+            // ADDING CODE
+            int countAmount = Integer.parseInt(settings.getString("countAmount", "1"));
+            int newValue = value - countAmount;
+            if (value > MAX_VALUE) {
+                value = MAX_VALUE;
+            } else if (value < MIN_VALUE) {
+                value = MIN_VALUE;
+            }
+            setValue(newValue);
+
+
+//            vibrateTick(DEFAULT_VIBRATION_DURATION + 20);
+            vibrate();
+            playSound(FloatingViewService.Sound.DECREMENT_SOUND);
+        }
+    }
+
+    public void reset() {
+        setValue(DEFAULT_VALUE);
+    }
+
+    public void setValue(int value) {
+        if (value > MAX_VALUE) value = MAX_VALUE;
+        else if (value < MIN_VALUE) value = MIN_VALUE;
+        this.value = value;
+        counterValue.setText(Integer.toString(value));
+        checkStateOfButtons();
+        saveValue();
+    }
+
+    private void saveValue() {
+        app.counters.remove(name);
+        app.counters.put(name, value);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    private void checkStateOfButtons() {
+//        if (value >= MAX_VALUE) incrementButton.setEnabled(false);
+//        else incrementButton.setEnabled(true);
+//        if (value <= MIN_VALUE) decrementButton.setEnabled(false);
+//        else decrementButton.setEnabled(true);
+
+        // todo: implement functionality to service
+
+        if (value >= MAX_VALUE) expandedView.setEnabled(false);
+        else expandedView.setEnabled(true);
+
+        if (value <= MIN_VALUE) expandedView.setEnabled(false);
+        else expandedView.setEnabled(true);
+
+    }
+
+    private void vibrateTick(long duration) {
+        if (settings.getBoolean("vibrationOn", true)) {
+            vibrator.vibrate(duration);
+        }
+    }
+
+    // ADDING CODE
+    private void vibrateCheckpoint(long duration) {
+        if (settings.getBoolean("checkpointVibrationOn", true)) {
+            vibrator.vibrate(duration);
+        }
+    }
+
+    private void vibrate() {
+
+        int checkpointValue = Integer.parseInt(settings.getString("checkpointValue", "100"));
+        boolean vibrationOn = settings.getBoolean("vibrationOn", true);
+        boolean checkpointVibrationOn = settings.getBoolean("checkpointVibrationOn", true);
+        int vibrationTime = Integer.parseInt(settings.getString("vibrationTime", "30"));
+        int checkpointVibrationTime = Integer.parseInt(settings.getString("checkpointVibrationTime", "90"));
+
+        if (value % checkpointValue == 0) { // checkpoint case
+            if (checkpointVibrationOn) vibrator.vibrate(checkpointVibrationTime);
+        } else { // normal case
+            if (vibrationOn) vibrator.vibrate(vibrationTime);
+        }
+    }
+
+    private void playSound(FloatingViewService.Sound sound) {
+        if (settings.getBoolean("soundsOn", false)) {
+//            AudioManager audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+            AudioManager audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+            float volume = (float) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            soundPool.play(soundsMap.get(sound.ordinal()), volume, volume, 1, 0, 1f);
+        }
+    }
+
+    private enum Sound {INCREMENT_SOUND, DECREMENT_SOUND}
+
+
+    private class SingleTapConfirm extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent event) {
+            return true;
+        }
+    }
+
 }

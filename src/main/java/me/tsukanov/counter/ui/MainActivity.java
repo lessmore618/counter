@@ -210,11 +210,19 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.menu_widget:
                 // IMPLEMENTING
+
+                String name = currentCounter.getCounterName();
+                String value = String.valueOf(app.counters.get(name));
+
+                Intent widgetServiceIntent = new Intent(MainActivity.this,FloatingViewService.class);
+                widgetServiceIntent.putExtra("name", name);
+                widgetServiceIntent.putExtra("value", value);
+
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                    startService(new Intent(MainActivity.this, FloatingViewService.class));
+                    startService(widgetServiceIntent);
                     finish();
                 } else if (Settings.canDrawOverlays(this)) {
-                    startService(new Intent(MainActivity.this, FloatingViewService.class));
+                    startService(widgetServiceIntent);
                     finish();
                 } else {
                     askPermission();
