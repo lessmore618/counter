@@ -28,6 +28,11 @@ and [translators](http://crowdin.net/project/simple-counter).
 * Sounds from [adobeflash.com](http://www.adobeflash.com/download/sounds/clicks/)
 
 ## What remains to do
-* Widget implement colors (service, settings)
-* Edit dialog (custom counteres checkpoint number, default counting direction boolean)
-* Service closing and opening logic 
+
+* Edit dialog: Checkpoint value, Final/Max value, Countup/Countdown, Loop/Switch Counter/ Contine
+* Service and application logic (close open and when)
+* Widget: 
+    - implement custom colors or predefined themes (search for best library)  
+    - implement round widget option https://stackoverflow.com/a/28106474, no png 
+    - 4 corners buttons, a way to choose counter, access application, settings and collapse 
+    

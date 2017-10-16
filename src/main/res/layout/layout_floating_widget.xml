@@ -80,7 +80,6 @@
                 android:textColor="#ffffff"
                 android:textStyle="bold" />
 
-
             <ImageView
                 android:id="@+id/buttonCloseExpanded"
                 android:layout_width="wrap_content"
