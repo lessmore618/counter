@@ -165,9 +165,11 @@ public class FloatingViewService extends Service implements View.OnClickListener
             private float initialTouchX;
             private float initialTouchY;
             private boolean hasMoved = false;
+            private boolean pressedInside = false;
             private int halfScreenWidth = getScreenWidth() / 2;
             private int halfScreenHeight = getScreenHeight() / 2;
             private int halfSideLength;
+            private boolean isCircular = true;
 //            private boolean isPortrait =
 
 //            private int halfSideLength = sideLength / 2;
@@ -176,93 +178,125 @@ public class FloatingViewService extends Service implements View.OnClickListener
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        initialX = params.x;
-                        initialY = params.y;
-                        initialTouchX = event.getRawX();
-                        initialTouchY = event.getRawY();
 
-                        hasMoved = false;
+                //CIRCLE :      (x-a)^2 + (y-b)^2 = r^2
+                float centerX, centerY, touchX, touchY, radius;
+                centerX = v.getWidth() / 2;
+                centerY = v.getHeight() / 2;
+                touchX = event.getX();
+                touchY = event.getY();
+                radius = centerX;
 
-                        if (expandedView.getVisibility() == View.VISIBLE) isExpanded = true;
-                        else isExpanded = false;
 
-                        return true;
 
-                    case MotionEvent.ACTION_UP:
-                        //when the drag is ended switching the state of the widget
-                        if (!hasMoved) {
-                            if (isExpanded) {
-                                increment();
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            initialX = params.x;
+                            initialY = params.y;
+                            initialTouchX = event.getRawX();
+                            initialTouchY = event.getRawY();
+
+                            if (isCircular) {
+                            if (Math.pow(touchX - centerX, 2) + Math.pow(touchY - centerY, 2) > Math.pow(radius, 2)) {
+                                pressedInside = false;
                             } else {
-                                collapsedView.setVisibility(View.GONE);
-                                expandedView.setVisibility(View.VISIBLE);
-                                isExpanded = false;
-                                hasMoved = false;
+                                pressedInside = true;
+                            }
+                            } else {
+                                pressedInside = true;
                             }
 
-                        }
-                        return true;
 
-                    case MotionEvent.ACTION_MOVE:
-                        //this code is helping the widget to move around the screen with fingers
-                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
+                            hasMoved = false;
 
-                        if (getApplicationContext().getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE){
-
-                            if (params.y < -(halfScreenWidth - halfSideLength))
-                                params.y = -(halfScreenWidth - halfSideLength);
-
-                            if (params.y > (halfScreenWidth - halfSideLength))
-                                params.y = halfScreenWidth - halfSideLength;
-
-                            if (params.x < -(halfScreenHeight - halfSideLength))
-                                params.x = -(halfScreenHeight - halfSideLength);
-
-                            if (params.x > (halfScreenHeight - halfSideLength))
-                                params.x = halfScreenHeight - halfSideLength;
-
-                        }else{
-
-                            if (params.x < -(halfScreenWidth - halfSideLength))
-                                params.x = -(halfScreenWidth - halfSideLength);
-
-                            if (params.x > (halfScreenWidth - halfSideLength))
-                                params.x = halfScreenWidth - halfSideLength;
-
-                            if (params.y < -(halfScreenHeight - halfSideLength))
-                                params.y = -(halfScreenHeight - halfSideLength);
-
-                            if (params.y > (halfScreenHeight - halfSideLength))
-                                params.y = halfScreenHeight - halfSideLength;
-
-                        }
+                            if (expandedView.getVisibility() == View.VISIBLE) isExpanded = true;
+                            else isExpanded = false;
 
 
-                        if (isExpanded) halfSideLength = sideLength / 2;
-                        else halfSideLength = 0;
+                            return true;
+
+                        case MotionEvent.ACTION_UP:
+                            //when the drag is ended switching the state of the widget
+
+                            pressedInside = false;
+
+                            if (!hasMoved) {
+                                if (isExpanded) {
+                                    increment();
+                                } else {
+                                    collapsedView.setVisibility(View.GONE);
+                                    expandedView.setVisibility(View.VISIBLE);
+                                    isExpanded = false;
+                                    hasMoved = false;
+                                }
+                            }
+
+                            return true;
+
+                        case MotionEvent.ACTION_MOVE:
+                            //this code is helping the widget to move around the screen with fingers
+                            params.x = initialX + (int) (event.getRawX() - initialTouchX);
+                            params.y = initialY + (int) (event.getRawY() - initialTouchY);
+
+                            if (isExpanded) halfSideLength = sideLength / 2;
+                            else halfSideLength = 0;
+
+                            if (getApplicationContext().getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE){
+
+                                if (params.y < -(halfScreenWidth - halfSideLength))
+                                    params.y = -(halfScreenWidth - halfSideLength);
+
+                                if (params.y > (halfScreenWidth - halfSideLength))
+                                    params.y = halfScreenWidth - halfSideLength;
+
+                                if (params.x < -(halfScreenHeight - halfSideLength))
+                                    params.x = -(halfScreenHeight - halfSideLength);
+
+                                if (params.x > (halfScreenHeight - halfSideLength))
+                                    params.x = halfScreenHeight - halfSideLength;
+
+                            }else{
+
+                                if (params.x < -(halfScreenWidth - halfSideLength))
+                                    params.x = -(halfScreenWidth - halfSideLength);
+
+                                if (params.x > (halfScreenWidth - halfSideLength))
+                                    params.x = halfScreenWidth - halfSideLength;
+
+                                if (params.y < -(halfScreenHeight - halfSideLength))
+                                    params.y = -(halfScreenHeight - halfSideLength);
+
+                                if (params.y > (halfScreenHeight - halfSideLength))
+                                    params.y = halfScreenHeight - halfSideLength;
+
+                            }
 
 
-                        int distanceMovedX = (int) (event.getRawX() - initialTouchX);
-                        int distanceMovedY = (int) (event.getRawY() - initialTouchY);
-                        int distanceMoved = (int) Math.sqrt(distanceMovedX * distanceMovedX + distanceMovedY * distanceMovedY);
+                            int distanceMovedX = (int) (event.getRawX() - initialTouchX);
+                            int distanceMovedY = (int) (event.getRawY() - initialTouchY);
+                            int distanceMoved = (int) Math.sqrt(distanceMovedX * distanceMovedX + distanceMovedY * distanceMovedY);
 
-                        // value is to be specified based on human tremor
-                        // could be different
+                            // value is to be specified based on human tremor
+                            // could be different
 
-                        if (distanceMoved > 70)
-                            hasMoved = true;
+                            if (distanceMoved > 70)
+                                hasMoved = true;
 
-                        if (isExpanded && distanceMoved < 70) {
-                        } else {
-                            mWindowManager.updateViewLayout(mFloatingView, params);
-                        }
-                        return true;
+                            if (isExpanded && distanceMoved < 70) {
+                            } else {
+                                if (pressedInside)
+                                mWindowManager.updateViewLayout(mFloatingView, params);
+                            }
+                            return true;
+                    }
+
+                    System.out.println("Outside Circle");
+                    return true;
                 }
-                return false;
-            }
+
+
+//                return false;
+
 
         };
 
@@ -291,6 +325,9 @@ public class FloatingViewService extends Service implements View.OnClickListener
 
         expandedView.getLayoutParams().height = sideLength; // settings.getInt("widget_sideLength",100);
         expandedView.getLayoutParams().width = sideLength; // settings.getInt("widget_sideLength",100);
+        expandedView.requestLayout();
+
+
         expandedView.getBackground().setAlpha(alpha);
 
 
