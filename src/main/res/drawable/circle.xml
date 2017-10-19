@@ -3,18 +3,15 @@
     android:innerRadius="0dp"
     android:shape="ring"
     android:thicknessRatio="1.9"
-    android:useLevel="false"
-    
+    android:useLevel="true"
+
     >
     <!--android:thicknessRatio="0.9"-->
     <!--<solid android:color="@android:color/transparent" />-->
     <solid android:color="#00ff00" />
 
     <stroke
-        android:width="10dp"
-
+        android:width="20dp"
         android:color="#ff0000"
-
-
         />
 </shape>

@@ -294,13 +294,10 @@ public class FloatingViewService extends Service implements View.OnClickListener
                     return true;
                 }
 
-
 //                return false;
-
-
         };
 
-        //adding an touchlistener to make drag movement of the floating widget
+        // adding an touchlistener to make drag movement of the floating widget
         mFloatingView.findViewById(R.id.relativeLayoutParent).setOnTouchListener(someOnTouchListener);
 //        expandedView.findViewById(R.id.relativeLayoutParent).setOnTouchListener(someOnTouchListener);
 
@@ -316,7 +313,6 @@ public class FloatingViewService extends Service implements View.OnClickListener
         soundsMap.put(FloatingViewService.Sound.INCREMENT_SOUND.ordinal(), soundPool.load(getApplicationContext(), R.raw.increment_sound, 1));
         soundsMap.put(FloatingViewService.Sound.DECREMENT_SOUND.ordinal(), soundPool.load(getApplicationContext(), R.raw.decrement_sound, 1));
 
-
         // width
         sideLength = Math.min(getScreenHeight(), getScreenWidth());
         sideLength = sideLength * Integer.parseInt(settings.getString("widgetScreenPercentage", "50")) / 100;
@@ -325,7 +321,9 @@ public class FloatingViewService extends Service implements View.OnClickListener
 
         expandedView.getLayoutParams().height = sideLength; // settings.getInt("widget_sideLength",100);
         expandedView.getLayoutParams().width = sideLength; // settings.getInt("widget_sideLength",100);
-        expandedView.requestLayout();
+
+        mFloatingView.getLayoutParams().height = sideLength; // settings.getInt("widget_sideLength",100);
+        mFloatingView.getLayoutParams().width = sideLength; // settings.getInt("widget_sideLength",100);
 
 
         expandedView.getBackground().setAlpha(alpha);
